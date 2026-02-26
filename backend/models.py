@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 import datetime
 from .database import Base
@@ -11,6 +11,7 @@ class Institution(Base):
     password_hash = Column(String(255), nullable=False)
     salt = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
+    requires_password_change = Column(Boolean, default=False)
     
     # Relationships
     location = relationship("InstitutionLocation", back_populates="institution", uselist=False)

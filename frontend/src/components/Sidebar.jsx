@@ -59,7 +59,7 @@ export default function Sidebar({ role, activeTab, setActiveTab }) {
             </nav>
 
             <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                {role === 'institution' && (
+                {(role === 'institution' || role === 'admin') && (
                     <button onClick={() => setActiveTab('settings')} className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)', width: '100%', marginBottom: '1rem' }}>
                         <Settings size={18} style={{ marginRight: '0.5rem' }} /> Settings
                     </button>

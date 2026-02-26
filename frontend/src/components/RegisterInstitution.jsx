@@ -12,14 +12,62 @@ export default function RegisterInstitution() {
 
     const [generatedCode, setGeneratedCode] = useState('');
     const [generatedPwd, setGeneratedPwd] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
-        // In real app, call backend /auth/register and /diseases/location
+        setError('');
+        setSuccess(false);
+
         const code = 'INST-' + Math.floor(1000 + Math.random() * 9000);
         const pwd = Math.random().toString(36).slice(-8);
-        setGeneratedCode(code);
-        setGeneratedPwd(pwd);
+
+        try {
+            // Register Auth DB A
+            const response = await fetch('http://localhost:8000/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    institution_code: code,
+                    password: pwd,
+                    email: formData.email
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.detail || 'Failed to register authentication credentials');
+            }
+
+            // Register Location DB D
+            const locResponse = await fetch('http://localhost:8000/diseases/location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    institution_code: code,
+                    latitude: parseFloat(formData.latitude),
+                    longitude: parseFloat(formData.longitude),
+                    state_name: formData.state
+                })
+            });
+
+            if (!locResponse.ok) {
+                throw new Error('Auth Succeeded but failed to register Database D Locations.');
+            }
+
+            setGeneratedCode(code);
+            setGeneratedPwd(pwd);
+            setSuccess(true);
+            setFormData({ name: '', email: '', latitude: '', longitude: '', state: '' });
+
+        } catch (err) {
+            setError(err.message);
+        }
     };
 
     return (
@@ -27,6 +75,7 @@ export default function RegisterInstitution() {
             <h2 style={{ color: 'var(--primary-blue)', marginBottom: '1.5rem' }}>Register New Partner Institution</h2>
 
             <div className="card" style={{ padding: '2rem', marginBottom: '2rem' }}>
+                {error && <div style={{ padding: '0.75rem', backgroundColor: 'rgba(230, 57, 70, 0.1)', color: 'var(--primary-red)', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 500 }}>{error}</div>}
                 <form onSubmit={handleRegister}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                         <div className="form-group" style={{ marginBottom: 0 }}>
@@ -65,7 +114,7 @@ export default function RegisterInstitution() {
                 </form>
             </div>
 
-            {generatedCode && (
+            {success && generatedCode && (
                 <div className="card animate-fade-in" style={{ padding: '2rem', backgroundColor: 'var(--primary-blue)', color: 'white' }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                         <Building2 size={24} style={{ marginRight: '1rem', color: 'var(--accent-blue)' }} />
